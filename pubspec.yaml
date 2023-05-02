@@ -18,6 +18,7 @@ dependencies:
   timeline_tile:
     git:
       url: https://github.com/JHBitencourt/timeline_tile.git
+  flex_color_picker: ^3.2.1
 
 
 
