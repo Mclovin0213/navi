@@ -87,17 +87,10 @@ class TimelinePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TimelineTile(
+      axis: TimelineAxis.horizontal,
       alignment: TimelineAlign.center,
-      endChild: Container(
-        constraints: const BoxConstraints(
-          minHeight: 120,
-        ),
-        color: Colors.lightGreenAccent,
-      ),
-      startChild: Container(
-        color: Colors.amberAccent,
-      ),
-    );
+      isFirst: true,
+    ); //TimelineTile
   }
 }
 
