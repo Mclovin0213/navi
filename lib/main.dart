@@ -31,6 +31,7 @@ class MyAppState extends ChangeNotifier {
 }
 
 class HomePage extends StatefulWidget {
+
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -107,16 +108,7 @@ class AddPage extends StatefulWidget {
     TimeOfDay(hour: 0, minute: 00),
   ];
 
-  static const List<Color> colors = <Color>[
-    Colors.deepPurple,
-    Colors.green,
-    Colors.red,
-    Colors.blue,
-    Colors.yellow,
-    Colors.orange,
-    Colors.pink
-  ];
-
+  static const List<String> colors = <String>['Purple', 'Green', 'Red', 'Blue', 'Yellow', 'Orange', 'Pink'];
 
   @override
   State<AddPage> createState() => _AddPageState();
@@ -130,7 +122,7 @@ class _AddPageState extends State<AddPage> {
     String typeValue = AddPage.types.first;
     TimeOfDay startTimeValue = AddPage.times.first;
     TimeOfDay endTimeValue = AddPage.times[1];
-    Color color = AddPage.colors.first;
+    String colorValue = AddPage.colors.first;
 
     return SafeArea(
       child: Form(
@@ -140,20 +132,7 @@ class _AddPageState extends State<AddPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              DropdownButtonFormField(
-                value: typeValue,
-                items: AddPage.types.map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                onChanged: (String? value) {
-                  setState(() {
-                    typeValue = value!;
-                  });
-                }
-              ),
+              DropdownString(typeValue: typeValue),
               TextFormField(
                 decoration: const InputDecoration(
                   hintText: 'Name of path'
@@ -176,21 +155,7 @@ class _AddPageState extends State<AddPage> {
                   return null;
                 },
               ),
-              DropdownButtonFormField(
-                icon: Icon(Icons.access_time),
-                value: startTimeValue,
-                items: AddPage.times.map<DropdownMenuItem<TimeOfDay>>((TimeOfDay value) {
-                  return DropdownMenuItem<TimeOfDay>(
-                    value: value,
-                    child: Text(value.format(context)),
-                  );
-                }).toList(),
-                onChanged: (TimeOfDay? value) {
-                  setState(() {
-                    startTimeValue = value!;
-                  });
-                }
-              ),
+              DropdownTime(startTimeValue: startTimeValue),
               DropdownButtonFormField(
                 icon: Icon(Icons.access_time),
                 value: endTimeValue,
@@ -207,17 +172,16 @@ class _AddPageState extends State<AddPage> {
                 }
               ),
               DropdownButtonFormField(
-                  icon: Icon(Icons.color_lens_outlined),
-                  value: color,
-                  items: AddPage.colors.map<DropdownMenuItem<Color>>((Color value) {
-                    return DropdownMenuItem<Color>(
+                  value: colorValue,
+                  items: AddPage.colors.map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
                       value: value,
-                      child: Text(value.toString())
+                      child: Text(value),
                     );
                   }).toList(),
-                  onChanged: (Color? value) {
+                  onChanged: (String? value) {
                     setState(() {
-                      color = value!;
+                      colorValue = value!;
                     });
                   }
               ),
@@ -233,6 +197,61 @@ class _AddPageState extends State<AddPage> {
           ),
         ),
       )
+    );
+  }
+}
+
+class DropdownTime extends StatelessWidget {
+  const DropdownTime({
+    super.key,
+    required this.startTimeValue,
+  });
+
+  final TimeOfDay startTimeValue;
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField(
+      icon: Icon(Icons.access_time),
+      value: startTimeValue,
+      items: AddPage.times.map<DropdownMenuItem<TimeOfDay>>((TimeOfDay value) {
+        return DropdownMenuItem<TimeOfDay>(
+          value: value,
+          child: Text(value.format(context)),
+        );
+      }).toList(),
+      onChanged: (TimeOfDay? value) {
+        // setState(() {
+        //   startTimeValue = value!;
+        // });
+      }
+    );
+  }
+}
+
+class DropdownString extends StatelessWidget {
+  const DropdownString({
+    super.key,
+    required this.typeValue,
+  });
+
+  final String typeValue;
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField(
+      value: typeValue,
+      items: AddPage.types.map<DropdownMenuItem<String>>((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(value),
+        );
+      }).toList(),
+      onChanged: (String? value) {
+        // setState(() {
+        //   typeValue = value!;
+        // });
+      }
     );
   }
 }
@@ -262,6 +281,7 @@ class Path {
   final String pathDesc;
   final TimeOfDay pathStart;
   final TimeOfDay pathEnd;
+  final String pathColor;
 
   Path({
     required this.pathType,
@@ -269,6 +289,7 @@ class Path {
     required this.pathDesc,
     required this.pathStart,
     required this.pathEnd,
+    required this.pathColor,
   });
 }
 
