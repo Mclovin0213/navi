@@ -14,11 +14,13 @@ dependencies:
 
   english_words: ^4.0.0
   provider: ^6.0.0
+  string_to_color: ^2.0.0
 
   timeline_tile:
     git:
       url: https://github.com/JHBitencourt/timeline_tile.git
   flex_color_picker: ^3.2.1
+  intl: ^0.18.1
 
 
 

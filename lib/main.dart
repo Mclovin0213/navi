@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:timeline_tile/timeline_tile.dart';
+import 'package:string_to_color/string_to_color.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
+import 'constants.dart';
 
 void main() {
   runApp(MyApp());
@@ -27,6 +29,30 @@ class MyApp extends StatelessWidget {
 }
 
 class MyAppState extends ChangeNotifier {
+  var paths = <Path>[];
+
+  List<Color> indicatorColors = List.filled(17, Colors.black);
+  List<Color> beforeLineColors = List.filled(17, Colors.black);
+  List<Color> afterLineColors = List.filled(17, Colors.black);
+
+
+  void addPath(Path newPath) {
+    paths.add(newPath);
+    updateColors(newPath);
+    notifyListeners();
+  }
+
+  void updateColors(Path newPath) {
+    for(int i = newPath.pathStartIndex; i <= newPath.pathEndIndex; i++) {
+      indicatorColors[i] = ColorUtils.stringToColor(newPath.pathColor.toLowerCase());
+    }
+    for(int i = newPath.pathStartIndex; i < newPath.pathEndIndex; i++) {
+      afterLineColors[i] = ColorUtils.stringToColor(newPath.pathColor.toLowerCase());
+    }
+    for(int i = newPath.pathStartIndex + 1; i <= newPath.pathEndIndex; i++) {
+      beforeLineColors[i] = ColorUtils.stringToColor(newPath.pathColor.toLowerCase());
+    }
+  }
 
 }
 
@@ -87,29 +113,6 @@ class _HomePageState extends State<HomePage> {
 class AddPage extends StatefulWidget {
   const AddPage({Key? key}) : super(key: key);
 
-  static const List<String> types = <String>['Project', 'Event', 'Task'];
-  static const List<TimeOfDay> times = <TimeOfDay>[
-    TimeOfDay(hour: 8, minute: 00),
-    TimeOfDay(hour: 9, minute: 00),
-    TimeOfDay(hour: 10, minute: 00),
-    TimeOfDay(hour: 11, minute: 00),
-    TimeOfDay(hour: 12, minute: 00),
-    TimeOfDay(hour: 13, minute: 00),
-    TimeOfDay(hour: 14, minute: 00),
-    TimeOfDay(hour: 15, minute: 00),
-    TimeOfDay(hour: 16, minute: 00),
-    TimeOfDay(hour: 17, minute: 00),
-    TimeOfDay(hour: 18, minute: 00),
-    TimeOfDay(hour: 19, minute: 00),
-    TimeOfDay(hour: 20, minute: 00),
-    TimeOfDay(hour: 21, minute: 00),
-    TimeOfDay(hour: 22, minute: 00),
-    TimeOfDay(hour: 23, minute: 00),
-    TimeOfDay(hour: 0, minute: 00),
-  ];
-
-  static const List<String> colors = <String>['Purple', 'Green', 'Red', 'Blue', 'Yellow', 'Orange', 'Pink'];
-
   @override
   State<AddPage> createState() => _AddPageState();
 }
@@ -117,83 +120,135 @@ class AddPage extends StatefulWidget {
 class _AddPageState extends State<AddPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
+  TextEditingController _pathNameTEC = TextEditingController();
+  TextEditingController _pathDescTEC = TextEditingController();
+
+  String typeValue = Constants.types.first;
+  TimeOfDay startTimeValue = Constants.times.first;
+  TimeOfDay endTimeValue = Constants.times[1];
+  String colorValue = Constants.colors.first;
+
+  int startIndex = 0;
+  int endIndex = 1;
+
   @override
   Widget build(BuildContext context) {
-    String typeValue = AddPage.types.first;
-    TimeOfDay startTimeValue = AddPage.times.first;
-    TimeOfDay endTimeValue = AddPage.times[1];
-    String colorValue = AddPage.colors.first;
+    var appState = context.watch<MyAppState>();
 
     return SafeArea(
-      child: Form(
-        key: _formKey,
-        child: Padding(
-          padding: const EdgeInsets.all(40.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              DropdownString(typeValue: typeValue),
-              TextFormField(
-                decoration: const InputDecoration(
-                  hintText: 'Name of path'
-                ),
-                validator: (String? value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter some text';
-                  }
-                  return null;
-                },
+      child: Center(
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Padding(
+              padding: const EdgeInsets.all(40.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  DropdownButtonFormField(
+                      value: typeValue,
+                      items: Constants.types.map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (String? value) {
+                        setState(() {
+                          typeValue = value!;
+                        });
+                      }
+                  ),
+                  TextFormField(
+                    controller: _pathNameTEC,
+                    decoration: const InputDecoration(
+                      hintText: 'Name of path'
+                    ),
+                    validator: (String? value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter some text';
+                      }
+                      return null;
+                    },
+                  ),
+                  TextFormField(
+                    controller: _pathDescTEC,
+                    decoration: const InputDecoration(
+                        hintText: 'Short Description (optional)'
+                    ),
+                    validator: (String? value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter some text';
+                      }
+                      return null;
+                    },
+                  ),
+                  DropdownButtonFormField(
+                      icon: Icon(Icons.access_time),
+                      value: startTimeValue,
+                      items: Constants.times.map<DropdownMenuItem<TimeOfDay>>((TimeOfDay value) {
+                        return DropdownMenuItem<TimeOfDay>(
+                          value: value,
+                          child: Text(value.format(context)),
+                        );
+                      }).toList(),
+                      onChanged: (TimeOfDay? value) {
+                        setState(() {
+                          startTimeValue = value!;
+                          startIndex = Constants.times.indexOf(value);
+                        });
+                      }
+                  ),
+                  DropdownButtonFormField(
+                    icon: Icon(Icons.access_time),
+                    value: endTimeValue,
+                    items: Constants.times.map<DropdownMenuItem<TimeOfDay>>((TimeOfDay value) {
+                      return DropdownMenuItem<TimeOfDay>(
+                        value: value,
+                        child: Text(value.format(context)),
+                      );
+                    }).toList(),
+                    onChanged: (TimeOfDay? value) {
+                      setState(() {
+                        endTimeValue = value!;
+                        endIndex = Constants.times.indexOf(value);
+                      });
+                    }
+                  ),
+                  DropdownButtonFormField(
+                      value: colorValue,
+                      items: Constants.colors.map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (String? value) {
+                        setState(() {
+                          colorValue = value!;
+                        });
+                      }
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        appState.addPath(Path(
+                          pathType: typeValue,
+                          pathName: _pathNameTEC.text,
+                          pathDesc: _pathDescTEC.text,
+                          pathStart: startTimeValue,
+                          pathStartIndex: startIndex,
+                          pathEnd: endTimeValue,
+                          pathEndIndex: endIndex,
+                          pathColor: colorValue
+                        ));
+                      }
+                    },
+                    child: Text('Submit')
+                  )
+                ],
               ),
-              TextFormField(
-                decoration: const InputDecoration(
-                    hintText: 'Short Description (optional)'
-                ),
-                validator: (String? value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter some text';
-                  }
-                  return null;
-                },
-              ),
-              DropdownTime(startTimeValue: startTimeValue),
-              DropdownButtonFormField(
-                icon: Icon(Icons.access_time),
-                value: endTimeValue,
-                items: AddPage.times.map<DropdownMenuItem<TimeOfDay>>((TimeOfDay value) {
-                  return DropdownMenuItem<TimeOfDay>(
-                    value: value,
-                    child: Text(value.format(context)),
-                  );
-                }).toList(),
-                onChanged: (TimeOfDay? value) {
-                  setState(() {
-                    endTimeValue = value!;
-                  });
-                }
-              ),
-              DropdownButtonFormField(
-                  value: colorValue,
-                  items: AddPage.colors.map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (String? value) {
-                    setState(() {
-                      colorValue = value!;
-                    });
-                  }
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-
-                  }
-                },
-                child: Text('Submit')
-              )
-            ],
+            ),
           ),
         ),
       )
@@ -201,76 +256,67 @@ class _AddPageState extends State<AddPage> {
   }
 }
 
-class DropdownTime extends StatelessWidget {
-  const DropdownTime({
-    super.key,
-    required this.startTimeValue,
-  });
-
-  final TimeOfDay startTimeValue;
-
-  @override
-  Widget build(BuildContext context) {
-    return DropdownButtonFormField(
-      icon: Icon(Icons.access_time),
-      value: startTimeValue,
-      items: AddPage.times.map<DropdownMenuItem<TimeOfDay>>((TimeOfDay value) {
-        return DropdownMenuItem<TimeOfDay>(
-          value: value,
-          child: Text(value.format(context)),
-        );
-      }).toList(),
-      onChanged: (TimeOfDay? value) {
-        // setState(() {
-        //   startTimeValue = value!;
-        // });
-      }
-    );
-  }
-}
-
-class DropdownString extends StatelessWidget {
-  const DropdownString({
-    super.key,
-    required this.typeValue,
-  });
-
-  final String typeValue;
-
-  @override
-  Widget build(BuildContext context) {
-    return DropdownButtonFormField(
-      value: typeValue,
-      items: AddPage.types.map<DropdownMenuItem<String>>((String value) {
-        return DropdownMenuItem<String>(
-          value: value,
-          child: Text(value),
-        );
-      }).toList(),
-      onChanged: (String? value) {
-        // setState(() {
-        //   typeValue = value!;
-        // });
-      }
-    );
-  }
-}
-
-
-class TimelinePage extends StatelessWidget {
+class TimelinePage extends StatefulWidget {
   const TimelinePage({Key? key}) : super(key: key);
 
   @override
+  State<TimelinePage> createState() => _TimelinePageState();
+}
+
+class _TimelinePageState extends State<TimelinePage> {
+
+
+  @override
   Widget build(BuildContext context) {
-    return ListView(
-      scrollDirection: Axis.horizontal,
-      children: [
-        TimelineTile(
-          axis: TimelineAxis.horizontal,
-          alignment: TimelineAlign.center,
-          isFirst: true,
-        ),
-      ]
+    var appState = context.watch<MyAppState>();
+    var paths = appState.paths;
+    var indicatorColors = appState.indicatorColors;
+    var beforeColors = appState.beforeLineColors;
+    var afterColors = appState.afterLineColors;
+
+
+    return SafeArea(
+      child: Column(
+        children: [
+
+          Flexible(
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: Constants.times.length,
+              itemBuilder: (context, index) {
+                return TimelineTile(
+                  isFirst: index == 0 ? true : false,
+                  isLast: index == Constants.times.length - 1 ? true : false,
+                  axis: TimelineAxis.horizontal,
+                  alignment: TimelineAlign.center,
+                  startChild: Container(
+                    width: 175,
+                  ),
+                  endChild: SizedBox(
+                    width: 175,
+                    child: Column(
+                      children: [
+                        Center(
+                          child: Text(Constants.times[index].format(context))
+                        ),
+                      ],
+                    )
+                  ),
+                  indicatorStyle: IndicatorStyle(
+                    color: indicatorColors[index]
+                  ),
+                  afterLineStyle: LineStyle(
+                    color: afterColors[index]
+                  ),
+                  beforeLineStyle: LineStyle(
+                    color: beforeColors[index]
+                  ),
+                );
+              }
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -280,7 +326,9 @@ class Path {
   final String pathName;
   final String pathDesc;
   final TimeOfDay pathStart;
+  final int pathStartIndex;
   final TimeOfDay pathEnd;
+  final int pathEndIndex;
   final String pathColor;
 
   Path({
@@ -288,8 +336,14 @@ class Path {
     required this.pathName,
     required this.pathDesc,
     required this.pathStart,
+    required this.pathStartIndex,
     required this.pathEnd,
+    required this.pathEndIndex,
     required this.pathColor,
   });
-}
 
+  @override
+  String toString() {
+    return '$pathType,\n $pathName,\n $pathDesc,\n ${pathStart.toString()},\n ${pathStartIndex.toString()},\n ${pathEnd.toString()},\n ${pathEndIndex.toString()},\n $pathColor';
+  }
+}
