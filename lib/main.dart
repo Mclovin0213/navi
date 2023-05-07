@@ -62,6 +62,27 @@ class _SignInPageState extends State<SignInPage> {
                     decoration: InputDecoration(
                       hintText: 'Enter Password'
                     ),
+                    obscureText: true,
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+                    },
+                    child: Text(
+                      'LOG IN'
+                    )
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text("Don't have account?"),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => SignUpPage()));
+                        },
+                        child: const Text('Sign Up')
+                      )
+                    ],
                   )
                 ],
               ),
@@ -81,9 +102,62 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
+  TextEditingController _userNameTEC = TextEditingController();
+  TextEditingController _emailTEC = TextEditingController();
+  TextEditingController _passwordTEC = TextEditingController();
+
+
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text(
+          "Sign Up"
+        ),
+      ),
+      body: SafeArea(
+        child: Center(
+          child: Container(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  TextField(
+                      controller: _emailTEC,
+                      decoration: InputDecoration(
+                          hintText: 'Enter Username'
+                      )
+                  ),
+                  TextField(
+                      controller: _emailTEC,
+                      decoration: InputDecoration(
+                          hintText: 'Enter Email'
+                      )
+                  ),
+                  TextField(
+                    controller: _passwordTEC,
+                    decoration: InputDecoration(
+                        hintText: 'Enter Password'
+                    ),
+                    obscureText: true,
+                  ),
+                  ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+                      },
+                      child: Text(
+                          'Sign Up'
+                      )
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
