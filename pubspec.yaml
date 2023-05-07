@@ -20,7 +20,10 @@ dependencies:
     git:
       url: https://github.com/JHBitencourt/timeline_tile.git
   flex_color_picker: ^3.2.1
-  intl: ^0.18.1
+  intl: ^0.17.0
+  firebase_core: ^2.11.0
+  firebase_auth: ^4.5.0
+  firebase_database: ^10.1.2
 
 
 

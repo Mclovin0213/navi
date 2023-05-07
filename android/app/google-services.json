@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "469701934291",
+    "project_id": "navi-11b61",
+    "storage_bucket": "navi-11b61.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:469701934291:android:3ed2b19c6bbeef57e6e826",
+        "android_client_info": {
+          "package_name": "com.navi.navi"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "469701934291-ju1efe384cb7chafsk280g0prnbh8bl7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.navi.navi",
+            "certificate_hash": "11b3186cbf7a92aaecf9d3b79626a3694539173c"
+          }
+        },
+        {
+          "client_id": "469701934291-rhst0e1a1st4mc6s2847h93apsi8me1b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDY2brusMpKUUJbFgwGHWpSdNZHe36dbUI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "469701934291-rhst0e1a1st4mc6s2847h93apsi8me1b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

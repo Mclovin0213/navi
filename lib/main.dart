@@ -1,12 +1,14 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:timeline_tile/timeline_tile.dart';
 import 'package:string_to_color/string_to_color.dart';
-import 'package:flex_color_picker/flex_color_picker.dart';
 import 'constants.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(MyApp());
 }
 
@@ -23,11 +25,69 @@ class MyApp extends StatelessWidget {
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         ),
-        home: HomePage(),
+        home: SignInPage(),
       ),
     );
   }
 }
+
+class SignInPage extends StatefulWidget {
+  const SignInPage({Key? key}) : super(key: key);
+
+  @override
+  State<SignInPage> createState() => _SignInPageState();
+}
+
+class _SignInPageState extends State<SignInPage> {
+  TextEditingController _emailTEC = TextEditingController();
+  TextEditingController _passwordTEC = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: Container(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  TextField(
+                    controller: _emailTEC,
+                    decoration: InputDecoration(
+                      hintText: 'Enter Email'
+                    )
+                  ),
+                  TextField(
+                    controller: _passwordTEC,
+                    decoration: InputDecoration(
+                      hintText: 'Enter Password'
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SignUpPage extends StatefulWidget {
+  const SignUpPage({Key? key}) : super(key: key);
+
+  @override
+  State<SignUpPage> createState() => _SignUpPageState();
+}
+
+class _SignUpPageState extends State<SignUpPage> {
+  @override
+  Widget build(BuildContext context) {
+    return const Placeholder();
+  }
+}
+
+
 
 class MyAppState extends ChangeNotifier {
   var paths = <Path>[];
@@ -40,6 +100,19 @@ class MyAppState extends ChangeNotifier {
   void addPath(Path newPath) {
     paths.add(newPath);
     updateColors(newPath);
+    notifyListeners();
+  }
+
+  void updatePath(Path oldPath, Path newPath) {
+    int index = paths.indexOf(oldPath);
+
+    paths[index].pathType = newPath.pathType;
+    paths[index].pathName = newPath.pathName;
+    paths[index].pathStart = newPath.pathStart;
+    paths[index].pathStartIndex = newPath.pathStartIndex;
+    paths[index].pathEnd = newPath.pathEnd;
+    paths[index].pathEndIndex = newPath.pathEndIndex;
+    paths[index].pathColor = newPath.pathColor;
     notifyListeners();
   }
 
@@ -135,17 +208,6 @@ class AddPage extends StatefulWidget {
 }
 
 class _AddPageState extends State<AddPage> {
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  TextEditingController _pathNameTEC = TextEditingController();
-
-  String typeValue = Constants.types.first;
-  TimeOfDay startTimeValue = Constants.times.first;
-  TimeOfDay endTimeValue = Constants.times[1];
-  String colorValue = Constants.colors.first;
-
-  int startIndex = 0;
-  int endIndex = 1;
 
   @override
   Widget build(BuildContext context) {
@@ -154,123 +216,9 @@ class _AddPageState extends State<AddPage> {
     return SafeArea(
       child: Center(
         child: SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: Padding(
-              padding: const EdgeInsets.all(40.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  DropdownButtonFormField(
-                      value: typeValue,
-                      items: Constants.types.map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                      onChanged: (String? value) {
-                        setState(() {
-                          typeValue = value!;
-                        });
-                      }
-                  ),
-                  TextFormField(
-                    controller: _pathNameTEC,
-                    decoration: const InputDecoration(
-                      hintText: 'Name of path'
-                    ),
-                    validator: (String? value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter some text';
-                      }
-                      return null;
-                    },
-                  ),
-                  DropdownButtonFormField(
-                      icon: Icon(Icons.access_time),
-                      value: startTimeValue,
-                      items: Constants.times.map<DropdownMenuItem<TimeOfDay>>((TimeOfDay value) {
-                        return DropdownMenuItem<TimeOfDay>(
-                          value: value,
-                          child: Text(value.format(context)),
-                        );
-                      }).toList(),
-                      onChanged: (TimeOfDay? value) {
-                        setState(() {
-                          startTimeValue = value!;
-                          startIndex = Constants.times.indexOf(value);
-                        });
-                      }
-                  ),
-                  DropdownButtonFormField(
-                    icon: Icon(Icons.access_time),
-                    value: endTimeValue,
-                    items: Constants.times.map<DropdownMenuItem<TimeOfDay>>((TimeOfDay value) {
-                      return DropdownMenuItem<TimeOfDay>(
-                        value: value,
-                        child: Text(value.format(context)),
-                      );
-                    }).toList(),
-                    onChanged: (TimeOfDay? value) {
-                      setState(() {
-                        endTimeValue = value!;
-                        endIndex = Constants.times.indexOf(value);
-                      });
-                    }
-                  ),
-                  DropdownButtonFormField(
-                      value: colorValue,
-                      items: Constants.colors.map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                      onChanged: (String? value) {
-                        setState(() {
-                          colorValue = value!;
-                        });
-                      }
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        appState.addPath(Path(
-                          pathType: typeValue,
-                          pathName: _pathNameTEC.text,
-                          pathStart: startTimeValue,
-                          pathStartIndex: startIndex,
-                          pathEnd: endTimeValue,
-                          pathEndIndex: endIndex,
-                          pathColor: colorValue
-                        ));
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: Text('Success'),
-                              content: Text('Path added successfully!'),
-                              actions: <Widget>[
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text('OK')
-                                )
-                              ]
-
-                            );
-                          }
-                        );
-                      }
-                    },
-                    child: Text('Submit')
-                  )
-                ],
-              ),
-            ),
-          ),
+          child: PathForm(
+            path: null,
+          )
         ),
       )
     );
@@ -415,32 +363,240 @@ class _EditPageState extends State<EditPage> {
     var appState = context.watch<MyAppState>();
     var paths = appState.paths;
 
-    return ListView.builder(
-      itemCount: paths.length,
-      itemBuilder: (context, index) {
-        return Card(
-          child: ListTile(
-            leading: CircleAvatar(
-              backgroundColor: ColorUtils.stringToColor(paths[index].pathColor.toLowerCase()),
+    return SafeArea(
+      child: Column(
+        children: [
+          Text(
+            'Paths',
+            style: TextStyle(
+              fontSize: 60
             ),
-            title: Text(paths[index].pathName),
-            trailing: Text('${paths[index].pathStart.format(context)}-${paths[index].pathEnd.format(context)}' ),
           ),
-        );
-      },
+          Flexible(
+            child: ListView.builder(
+              itemCount: paths.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ElevatedButton(
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: ColorUtils.stringToColor(paths[index].pathColor.toLowerCase()),
+                      ),
+                      title: Text(paths[index].pathName),
+                      trailing: Text('${paths[index].pathStart.format(context)}-${paths[index].pathEnd.format(context)}' ),
+                    ),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return Dialog(
+                            child: SingleChildScrollView(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  PathForm(path: paths[index]),
+                                  SizedBox(height: 16),
+                                  TextButton(
+                                    onPressed: () => Navigator.of(context).pop(),
+                                    child: Text('Close'),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class PathForm extends StatefulWidget {
+  final Path? path;
+
+  const PathForm({Key? key, required this.path})
+      : super(key: key);
+
+  @override
+  State<PathForm> createState() => _PathFormState();
+}
+
+class _PathFormState extends State<PathForm> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  late TextEditingController _pathNameTEC;
+  late String typeValue;
+  late TimeOfDay startTimeValue;
+  late TimeOfDay endTimeValue;
+  late String colorValue;
+  late int startIndex;
+  late int endIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _pathNameTEC = TextEditingController(text: widget.path?.pathName ?? '');
+    typeValue = widget.path?.pathType ?? Constants.types.first;
+    startTimeValue = widget.path?.pathStart ?? Constants.times.first;
+    endTimeValue = widget.path?.pathEnd ?? Constants.times[1];
+    colorValue = widget.path?.pathColor ?? Constants.colors.first;
+    startIndex = widget.path?.pathStartIndex ?? 0;
+    endIndex = widget.path?.pathEndIndex ?? 1;
+  }
+
+  @override
+  void dispose() {
+    _pathNameTEC.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+
+    return Material(
+      child: Form(
+        key: _formKey,
+        child: Padding(
+          padding: const EdgeInsets.all(40.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              DropdownButtonFormField(
+                  value: typeValue,
+                  items: Constants.types.map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (String? value) {
+                    setState(() {
+                      typeValue = value!;
+                    });
+                  }
+              ),
+              TextFormField(
+                controller: _pathNameTEC,
+                decoration: const InputDecoration(
+                    hintText: 'Name of path'
+                ),
+                validator: (String? value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter some text';
+                  }
+                  return null;
+                },
+              ),
+              DropdownButtonFormField(
+                  icon: Icon(Icons.access_time),
+                  value: startTimeValue,
+                  items: Constants.times.map<DropdownMenuItem<TimeOfDay>>((TimeOfDay value) {
+                    return DropdownMenuItem<TimeOfDay>(
+                      value: value,
+                      child: Text(value.format(context)),
+                    );
+                  }).toList(),
+                  onChanged: (TimeOfDay? value) {
+                    setState(() {
+                      startTimeValue = value!;
+                      startIndex = Constants.times.indexOf(value);
+                    });
+                  }
+              ),
+              DropdownButtonFormField(
+                  icon: Icon(Icons.access_time),
+                  value: endTimeValue,
+                  items: Constants.times.map<DropdownMenuItem<TimeOfDay>>((TimeOfDay value) {
+                    return DropdownMenuItem<TimeOfDay>(
+                      value: value,
+                      child: Text(value.format(context)),
+                    );
+                  }).toList(),
+                  onChanged: (TimeOfDay? value) {
+                    setState(() {
+                      endTimeValue = value!;
+                      endIndex = Constants.times.indexOf(value);
+                    });
+                  }
+              ),
+              DropdownButtonFormField(
+                  value: colorValue,
+                  items: Constants.colors.map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (String? value) {
+                    setState(() {
+                      colorValue = value!;
+                    });
+                  }
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    final path = Path(
+                        pathType: typeValue,
+                        pathName: _pathNameTEC.text,
+                        pathStart: startTimeValue,
+                        pathStartIndex: startIndex,
+                        pathEnd: endTimeValue,
+                        pathEndIndex: endIndex,
+                        pathColor: colorValue
+                    );
+                    if (widget.path == null) {
+                      appState.addPath(path);
+                    } else {
+                      appState.updatePath(widget.path!, path);
+                    }
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                            title: Text('Success'),
+                            content: Text('Path added successfully!'),
+                            actions: <Widget>[
+                              TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text('OK')
+                              )
+                            ]
+
+                        );
+                      }
+                    );
+                  }
+                },
+                child: Text('Submit'))
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
 
 
+
 class Path {
-  final String pathType;
-  final String pathName;
-  final TimeOfDay pathStart;
-  final int pathStartIndex;
-  final TimeOfDay pathEnd;
-  final int pathEndIndex;
-  final String pathColor;
+  String pathType;
+  String pathName;
+  TimeOfDay pathStart;
+  int pathStartIndex;
+  TimeOfDay pathEnd;
+  int pathEndIndex;
+  String pathColor;
 
   Path({
     required this.pathType,
