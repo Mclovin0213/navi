@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -217,18 +220,31 @@ class _SignUpPageState extends State<SignUpPage> {
 
 
 class MyAppState extends ChangeNotifier {
+  final DatabaseReference pathsRef = FirebaseDatabase.instance.ref().child('paths');
+
+
+
   var paths = <Path>[];
 
   List<Color> indicatorColors = List.filled(17, Colors.black);
   List<Color> beforeLineColors = List.filled(17, Colors.black);
   List<Color> afterLineColors = List.filled(17, Colors.black);
 
-
   void addPath(Path newPath) {
     paths.add(newPath);
     updateColors(newPath);
+    savePathsToFirebase(paths);
     notifyListeners();
   }
+
+  void savePathsToFirebase(List<Path> paths) {
+    final Map<String, dynamic> pathsMap = {};
+    for (int i = 0; i < paths.length; i++) {
+      pathsMap[i.toString()] = paths[i].toJson();
+    }
+    pathsRef.set(pathsMap);
+  }
+
 
   void updatePath(Path oldPath, Path newPath) {
     int index = paths.indexOf(oldPath);
@@ -257,6 +273,24 @@ class MyAppState extends ChangeNotifier {
     }
   }
 
+  void removeColors(Path? newPath) {
+    if (newPath == null) {
+      return;
+    } else {
+      Color newColor = Colors.black;
+
+      for(int i = newPath.pathStartIndex; i <= newPath.pathEndIndex; i++) {
+        indicatorColors[i] = newColor;
+      }
+      for(int i = newPath.pathStartIndex; i < newPath.pathEndIndex; i++) {
+        afterLineColors[i] = newColor;
+      }
+      for(int i = newPath.pathStartIndex + 1; i <= newPath.pathEndIndex; i++) {
+        beforeLineColors[i] = newColor;
+      }
+    }
+  }
+
   Path? findPathByTime(TimeOfDay time) {
     for (Path path in paths) {
       if (path.pathStart.hour < time.hour ||
@@ -269,6 +303,7 @@ class MyAppState extends ChangeNotifier {
     }
     return null;
   }
+
 }
 
 class HomePage extends StatefulWidget {
@@ -586,6 +621,8 @@ class _PathFormState extends State<PathForm> {
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
 
+    var oldPath = widget.path;
+
     return Material(
       child: Form(
         key: _formKey,
@@ -681,6 +718,8 @@ class _PathFormState extends State<PathForm> {
                     if (widget.path == null) {
                       appState.addPath(path);
                     } else {
+                      appState.removeColors(oldPath);
+                      appState.updateColors(path);
                       appState.updatePath(widget.path!, path);
                     }
                     showDialog(
@@ -715,13 +754,13 @@ class _PathFormState extends State<PathForm> {
 
 class Path {
   final String id;
-  final String pathType;
-  final String pathName;
-  final TimeOfDay pathStart;
-  final int pathStartIndex;
-  final TimeOfDay pathEnd;
-  final int pathEndIndex;
-  final String pathColor;
+  String pathType;
+  String pathName;
+  TimeOfDay pathStart;
+  int pathStartIndex;
+  TimeOfDay pathEnd;
+  int pathEndIndex;
+  String pathColor;
 
   Path({
     String? id,
@@ -733,6 +772,32 @@ class Path {
     required this.pathEndIndex,
     required this.pathColor,
   }) : id = id ?? Uuid().v4();
+
+  factory Path.fromJson(Map<String, dynamic> json) {
+    return Path(
+      id: json['id'],
+      pathType: json['pathType'],
+      pathName: json['pathName'],
+      pathStart: TimeOfDay.fromDateTime(DateTime.parse(json['pathStart'])),
+      pathStartIndex: json['pathStartIndex'],
+      pathEnd: TimeOfDay.fromDateTime(DateTime.parse(json['pathEnd'])),
+      pathEndIndex: json['pathEndIndex'],
+      pathColor: json['pathColor'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'pathType': pathType,
+      'pathName': pathName,
+      'pathStart': pathStart.toString(),
+      'pathStartIndex': pathStartIndex,
+      'pathEnd': pathEnd.toString(),
+      'pathEndIndex': pathEndIndex,
+      'pathColor': pathColor,
+    };
+  }
 
   @override
   String toString() {
