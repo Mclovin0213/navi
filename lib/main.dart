@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:timeline_tile/timeline_tile.dart';
 import 'package:string_to_color/string_to_color.dart';
@@ -43,16 +44,32 @@ class MyAppState extends ChangeNotifier {
   }
 
   void updateColors(Path newPath) {
+    Color newColor = ColorUtils.stringToColor(newPath.pathColor.toLowerCase());
+
     for(int i = newPath.pathStartIndex; i <= newPath.pathEndIndex; i++) {
-      indicatorColors[i] = ColorUtils.stringToColor(newPath.pathColor.toLowerCase());
+      indicatorColors[i] = newColor;
     }
     for(int i = newPath.pathStartIndex; i < newPath.pathEndIndex; i++) {
-      afterLineColors[i] = ColorUtils.stringToColor(newPath.pathColor.toLowerCase());
+      afterLineColors[i] = newColor;
     }
     for(int i = newPath.pathStartIndex + 1; i <= newPath.pathEndIndex; i++) {
-      beforeLineColors[i] = ColorUtils.stringToColor(newPath.pathColor.toLowerCase());
+      beforeLineColors[i] = newColor;
     }
   }
+
+  Path? findPathByTime(TimeOfDay time) {
+    for (Path path in paths) {
+      if (path.pathStart.hour < time.hour ||
+          (path.pathStart.hour == time.hour && path.pathStart.minute <= time.minute)) {
+        if (path.pathEnd.hour > time.hour ||
+            (path.pathEnd.hour == time.hour && path.pathStart.minute >= time.minute)) {
+          return path;
+        }
+      }
+    }
+    return null;
+  }
+
 
 }
 
@@ -264,24 +281,84 @@ class TimelinePage extends StatefulWidget {
 }
 
 class _TimelinePageState extends State<TimelinePage> {
+  final ScrollController scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    var nowTime = TimeOfDay.now();
+    var roundedTime = TimeOfDay(hour: nowTime.hour, minute: 0);
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      var scrollPosition = scrollController.position;
+      var pixelsToScroll = (Constants.times.indexOf(roundedTime) * 170).toDouble();
+      scrollPosition.animateTo(
+        pixelsToScroll,
+        duration: const Duration(milliseconds: 6000),
+        curve: Curves.easeInOutCubicEmphasized,
+      );
+    });
+  }
 
 
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
-    var paths = appState.paths;
     var indicatorColors = appState.indicatorColors;
     var beforeColors = appState.beforeLineColors;
     var afterColors = appState.afterLineColors;
+    var now = DateTime.now();
+    var formattedTime = DateFormat('hh:mm a').format(now);
 
+    Path? currentPath = appState.findPathByTime(TimeOfDay.now());
+    var pathColor = Colors.black;
+    var pathType = '';
+    var pathName = '';
+
+    if(currentPath != null) {
+      pathColor = ColorUtils.stringToColor(currentPath.pathColor.toLowerCase());
+      pathType = currentPath.pathType;
+      pathName = currentPath.pathName;
+    }
 
     return SafeArea(
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-
+          SizedBox(
+            height: 40,
+          ),
+          SizedBox(
+            height: 200,
+            child: Column(
+              children: [
+                Text(
+                  formattedTime,
+                  style: TextStyle(
+                    color: pathColor,
+                    fontSize: 60
+                  )
+                ),
+                Text(
+                  pathName,
+                  style: TextStyle(
+                    color: pathColor,
+                    fontSize: 30
+                  ),
+                ),
+                Text(
+                  pathType,
+                  style: TextStyle(
+                    color: pathColor,
+                  ),
+                )
+              ],
+            )
+          ),
           Flexible(
+            fit: FlexFit.loose,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
+              controller: scrollController,
               itemCount: Constants.times.length,
               itemBuilder: (context, index) {
                 return TimelineTile(
