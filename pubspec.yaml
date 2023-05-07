@@ -24,6 +24,7 @@ dependencies:
   firebase_core: ^2.11.0
   firebase_auth: ^4.5.0
   firebase_database: ^10.1.2
+  uuid: ^3.0.7
 
 
 

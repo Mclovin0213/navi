@@ -1,9 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:timeline_tile/timeline_tile.dart';
 import 'package:string_to_color/string_to_color.dart';
+import 'package:uuid/uuid.dart';
 import 'constants.dart';
 
 void main() async {
@@ -66,7 +68,34 @@ class _SignInPageState extends State<SignInPage> {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+                      FirebaseAuth.instance
+                          .signInWithEmailAndPassword(
+                            email: _emailTEC.text,
+                            password: _passwordTEC.text)
+                          .then((value) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => HomePage())
+                            );
+                          }).onError((error, stackTrace) {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                    title: Text('Sign In Failed'),
+                                    content: Text('Wrong Email/Password'),
+                                    actions: <Widget>[
+                                      TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: Text('OK')
+                                      )
+                                    ]
+                                );
+                              }
+                            );
+                      });
                     },
                     child: Text(
                       'LOG IN'
@@ -125,7 +154,7 @@ class _SignUpPageState extends State<SignUpPage> {
               child: Column(
                 children: [
                   TextField(
-                      controller: _emailTEC,
+                      controller: _userNameTEC,
                       decoration: InputDecoration(
                           hintText: 'Enter Username'
                       )
@@ -145,7 +174,31 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                   ElevatedButton(
                       onPressed: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+                        FirebaseAuth.instance
+                          .createUserWithEmailAndPassword(
+                            email: _emailTEC.text,
+                            password: _passwordTEC.text)
+                          .then((value) {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+                        }).onError((error, stackTrace){
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                    title: Text('Sign Up Failed'),
+                                    content: Text('Try Again'),
+                                    actions: <Widget>[
+                                      TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: Text('OK')
+                                      )
+                                    ]
+                                );
+                              }
+                          );
+                        });
                       },
                       child: Text(
                           'Sign Up'
@@ -216,8 +269,6 @@ class MyAppState extends ChangeNotifier {
     }
     return null;
   }
-
-
 }
 
 class HomePage extends StatefulWidget {
@@ -636,17 +687,16 @@ class _PathFormState extends State<PathForm> {
                       context: context,
                       builder: (BuildContext context) {
                         return AlertDialog(
-                            title: Text('Success'),
-                            content: Text('Path added successfully!'),
-                            actions: <Widget>[
-                              TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text('OK')
-                              )
-                            ]
-
+                          title: Text('Success'),
+                          content: Text('Path added successfully!'),
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text('OK')
+                            )
+                          ]
                         );
                       }
                     );
@@ -664,15 +714,17 @@ class _PathFormState extends State<PathForm> {
 
 
 class Path {
-  String pathType;
-  String pathName;
-  TimeOfDay pathStart;
-  int pathStartIndex;
-  TimeOfDay pathEnd;
-  int pathEndIndex;
-  String pathColor;
+  final String id;
+  final String pathType;
+  final String pathName;
+  final TimeOfDay pathStart;
+  final int pathStartIndex;
+  final TimeOfDay pathEnd;
+  final int pathEndIndex;
+  final String pathColor;
 
   Path({
+    String? id,
     required this.pathType,
     required this.pathName,
     required this.pathStart,
@@ -680,7 +732,7 @@ class Path {
     required this.pathEnd,
     required this.pathEndIndex,
     required this.pathColor,
-  });
+  }) : id = id ?? Uuid().v4();
 
   @override
   String toString() {
