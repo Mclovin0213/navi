@@ -93,7 +93,7 @@ class _HomePageState extends State<HomePage> {
         page = TimelinePage();
         break;
       case 2:
-        page = Placeholder();
+        page = EditPage();
         break;
       default:
         throw UnimplementedError('No widget for $selectedIndex');
@@ -138,7 +138,6 @@ class _AddPageState extends State<AddPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   TextEditingController _pathNameTEC = TextEditingController();
-  TextEditingController _pathDescTEC = TextEditingController();
 
   String typeValue = Constants.types.first;
   TimeOfDay startTimeValue = Constants.times.first;
@@ -180,18 +179,6 @@ class _AddPageState extends State<AddPage> {
                     controller: _pathNameTEC,
                     decoration: const InputDecoration(
                       hintText: 'Name of path'
-                    ),
-                    validator: (String? value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter some text';
-                      }
-                      return null;
-                    },
-                  ),
-                  TextFormField(
-                    controller: _pathDescTEC,
-                    decoration: const InputDecoration(
-                        hintText: 'Short Description (optional)'
                     ),
                     validator: (String? value) {
                       if (value == null || value.isEmpty) {
@@ -252,13 +239,30 @@ class _AddPageState extends State<AddPage> {
                         appState.addPath(Path(
                           pathType: typeValue,
                           pathName: _pathNameTEC.text,
-                          pathDesc: _pathDescTEC.text,
                           pathStart: startTimeValue,
                           pathStartIndex: startIndex,
                           pathEnd: endTimeValue,
                           pathEndIndex: endIndex,
                           pathColor: colorValue
                         ));
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('Success'),
+                              content: Text('Path added successfully!'),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text('OK')
+                                )
+                              ]
+
+                            );
+                          }
+                        );
                       }
                     },
                     child: Text('Submit')
@@ -398,10 +402,40 @@ class _TimelinePageState extends State<TimelinePage> {
   }
 }
 
+class EditPage extends StatefulWidget {
+  const EditPage({Key? key}) : super(key: key);
+
+  @override
+  State<EditPage> createState() => _EditPageState();
+}
+
+class _EditPageState extends State<EditPage> {
+  @override
+  Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+    var paths = appState.paths;
+
+    return ListView.builder(
+      itemCount: paths.length,
+      itemBuilder: (context, index) {
+        return Card(
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: ColorUtils.stringToColor(paths[index].pathColor.toLowerCase()),
+            ),
+            title: Text(paths[index].pathName),
+            trailing: Text('${paths[index].pathStart.format(context)}-${paths[index].pathEnd.format(context)}' ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+
 class Path {
   final String pathType;
   final String pathName;
-  final String pathDesc;
   final TimeOfDay pathStart;
   final int pathStartIndex;
   final TimeOfDay pathEnd;
@@ -411,7 +445,6 @@ class Path {
   Path({
     required this.pathType,
     required this.pathName,
-    required this.pathDesc,
     required this.pathStart,
     required this.pathStartIndex,
     required this.pathEnd,
@@ -421,6 +454,6 @@ class Path {
 
   @override
   String toString() {
-    return '$pathType,\n $pathName,\n $pathDesc,\n ${pathStart.toString()},\n ${pathStartIndex.toString()},\n ${pathEnd.toString()},\n ${pathEndIndex.toString()},\n $pathColor';
+    return '$pathType,\n $pathName,\n ${pathStart.toString()},\n ${pathStartIndex.toString()},\n ${pathEnd.toString()},\n ${pathEndIndex.toString()},\n $pathColor';
   }
 }
