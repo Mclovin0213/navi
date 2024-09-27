@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "469701934291",
+    "firebase_url": "https://navi-11b61-default-rtdb.firebaseio.com",
     "project_id": "navi-11b61",
     "storage_bucket": "navi-11b61.appspot.com"
   },
@@ -37,6 +38,13 @@
             {
               "client_id": "469701934291-rhst0e1a1st4mc6s2847h93apsi8me1b.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "469701934291-03tjtt2r5ru44rnvbfvv58pvmke30r75.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.navi.navi"
+              }
             }
           ]
         }

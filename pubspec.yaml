@@ -20,11 +20,11 @@ dependencies:
     git:
       url: https://github.com/JHBitencourt/timeline_tile.git
   flex_color_picker: ^3.2.1
-  intl: ^0.17.0
+  intl: ^0.19.0
   firebase_core: ^2.11.0
   firebase_auth: ^4.5.0
-  firebase_database: ^10.1.2
-  uuid: ^3.0.7
+  uuid: ^4.2.2
+  cloud_firestore: ^4.14.0
 
 
 
@@ -32,7 +32,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^2.0.0
+  flutter_lints: ^3.0.1
 
 flutter:
   uses-material-design: true
