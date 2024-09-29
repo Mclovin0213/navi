@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:string_to_color/string_to_color.dart';
-import 'PathForm.dart';
+import 'path_form.dart';
 import 'package:navi/state.dart';
 
 class EditPage extends StatefulWidget {

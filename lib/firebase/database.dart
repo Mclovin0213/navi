@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:navi/widgets/Path.dart';
+import 'package:navi/widgets/path.dart';
 
 class DatabaseService {
   final FirebaseFirestore db = FirebaseFirestore.instance;

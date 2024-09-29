@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:navi/state.dart';
 import 'package:provider/provider.dart';
 
-import 'PathForm.dart';
+import 'path_form.dart';
 
 class AddPage extends StatefulWidget {
   const AddPage({Key? key}) : super(key: key);

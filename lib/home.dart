@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:navi/widgets/AddPage.dart';
-import 'package:navi/widgets/EditPage.dart';
-import 'package:navi/widgets/TimelinePage.dart';
+import 'package:navi/widgets/add_page.dart';
+import 'package:navi/widgets/edit_page.dart';
+import 'package:navi/widgets/timeline_page.dart';
 
 class HomePage extends StatefulWidget {
 

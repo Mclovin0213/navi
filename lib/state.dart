@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:navi/widgets/Path.dart';
+import 'package:navi/widgets/path.dart';
 import 'package:string_to_color/string_to_color.dart';
 
 class MyAppState extends ChangeNotifier {

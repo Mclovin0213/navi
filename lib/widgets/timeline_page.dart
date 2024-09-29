@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:string_to_color/string_to_color.dart';
 import 'package:timeline_tile/timeline_tile.dart';
 import 'package:navi/state.dart';
-import 'Path.dart';
+import 'path.dart';
 
 class TimelinePage extends StatefulWidget {
   const TimelinePage({super.key});

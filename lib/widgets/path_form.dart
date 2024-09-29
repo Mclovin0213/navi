@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:navi/widgets/Path.dart';
+import 'package:navi/widgets/path.dart';
 import 'package:navi/constants.dart';
 import 'package:provider/provider.dart';
 
